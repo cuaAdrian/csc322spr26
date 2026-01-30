@@ -1,0 +1,41 @@
+import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r132/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+  45,
+  window.innerWidth / window.innerHeight,
+  1,500
+);
+camera.position.set(0, 0, 100);
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+function createLine(start, end, color = 0xffffff) 
+{
+  const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+  const material = new THREE.LineBasicMaterial({ color });
+  return new THREE.Line(geometry, material);
+}
+
+const L = new THREE.Vector3(-20, -10, 0);
+const R = new THREE.Vector3(20, -10, 0);
+const M = new THREE.Vector3(0, 20, 0);
+const T = new THREE.Vector3(0, 0, 30);
+
+scene.add(createLine(L, R));
+scene.add(createLine(R, M));
+scene.add(createLine(M, L));
+
+scene.add(createLine(T, L));
+scene.add(createLine(T, R));
+scene.add(createLine(T, M));
+
+function animate() 
+{
+  requestAnimationFrame(animate);
+  renderer.render(scene, camera);
+}
+animate();
