@@ -1,0 +1,132 @@
+
+import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r132/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera
+(
+ 45,
+ window.innerWidth / window.innerHeight,
+ 1, 2000
+);
+camera.position.set(100, 100, 200);
+
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+const monument = new THREE.Group();
+
+const baseWidth = 55;
+const topWidth = 34;
+const tHeight = 555;
+const PH = 55;
+const towerHeight = tHeight - PH;
+
+const bw = baseWidth / 2;
+const tw = topWidth / 2;
+
+const towerG = new THREE.BufferGeometry();
+const towerV = new Float32Array([
+ -bw, 0, -bw,
+  bw, 0, -bw,
+  bw, 0,  bw,
+ -bw, 0,  bw,
+
+ -tw, towerHeight, -tw,
+  tw, towerHeight, -tw,
+  tw, towerHeight,  tw,
+ -tw, towerHeight,  tw,
+]);
+
+towerG.setAttribute
+(
+ 'position',
+ new THREE.BufferAttribute(towerV, 3)
+);
+
+const towerFaces =
+[
+ [0, 1, 5, 0, 5, 4],
+ [1, 2, 6, 1, 6, 5],
+ [2, 3, 7, 2, 7, 6],
+ [3, 0, 4, 3, 4, 7]
+];
+
+towerG.computeVertexNormals();
+
+const towerDetails =
+[
+ new THREE.MeshBasicMaterial({ color: 'maroon' }),//keyword
+ new THREE.MeshBasicMaterial({ color: 0x000080}),//Hexadecimal
+ new THREE.MeshBasicMaterial({ color: 'royalblue' }),//Css string
+ new THREE.MeshBasicMaterial({ color: 'rgb(255,165,0)' })//RGB
+];
+
+towerFaces.forEach((face, i) =>
+{
+ const g = towerG.clone();
+ g.setIndex(face);
+ monument.add(new THREE.Mesh(g, towerDetails[i]));
+});
+
+const pyramidG = new THREE.BufferGeometry();
+
+const pyramidV = new Float32Array
+([
+ -tw, towerHeight, -tw,
+  tw, towerHeight, -tw,
+  tw, towerHeight,  tw,
+ -tw, towerHeight,  tw,
+  0,  tHeight,  0
+]);
+
+pyramidG.setAttribute
+(
+ 'position',
+ new THREE.BufferAttribute(pyramidV, 3)
+);
+
+const pyramidFaces =
+[
+ [0, 1, 4],
+ [1, 2, 4],
+ [2, 3, 4],
+ [3, 0, 4]
+];
+
+pyramidG.computeVertexNormals();
+
+const pyramidDetails =
+[ 
+ new THREE.MeshBasicMaterial({ color: 'green' }),//keyword
+ new THREE.MeshBasicMaterial({ color: 0xff00ff }),//Hexadecimal
+ new THREE.MeshBasicMaterial({ color: 'pink' }),//Css string
+ new THREE.MeshBasicMaterial({ color: 'rgb(128,0,128)' })//RGB
+];
+
+pyramidFaces.forEach((face, i) =>
+{
+ const g = pyramidG.clone();
+ g.setIndex(face);
+ monument.add(new THREE.Mesh(g, pyramidDetails[i]));
+});
+
+scene.add(monument);
+
+function animate()
+{
+ requestAnimationFrame(animate);
+ monument.rotation.y += 0.005; // rotate around Y-axis
+ controls.update();
+ renderer.render(scene, camera);
+}
+animate();
+
+window.addEventListener('resize', () =>
+{
+ camera.aspect = window.innerWidth / window.innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(window.innerWidth, window.innerHeight);
+});
