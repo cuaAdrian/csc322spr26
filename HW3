@@ -1,0 +1,87 @@
+import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r132/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.121.1/examples/jsm/controls/OrbitControls.js';
+
+// Create Renderer
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Create Camera and Scene
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+camera.position.set(0, 0, 100);
+const scene = new THREE.Scene();
+const controls = new OrbitControls(camera, renderer.domElement);
+
+// Axes
+scene.add(new THREE.AxesHelper(6));
+
+// --------------------
+// Implicit Curve:
+// F(x,y) = (x^2 + y^2)^2 − 2(x^2 − y^2)
+// --------------------
+
+function F(x, y) {
+  const r1 = x*x + y*y;
+  const r2 = x*x - y*y;
+  return (r1 * r1) - 2 * r2;
+}
+
+// Gradient of F
+function gradientF(x, y) {
+  const r1 = x*x + y*y;
+  return new THREE.Vector3(
+    4 * x * r1 - 4 * x,
+    4 * y * r1 + 4 * y,
+    0
+  );
+}
+
+const CP = [];
+const gridm = -5;
+const gridM = 5;
+const step = 0.1;
+const threshold = 0.05;
+
+// Sample grid to approximate F(x,y) = 0
+for (let x = gridm; x <= gridM; x += step) {
+  for (let y = gridm; y <= gridM; y += step) {
+
+    if (Math.abs(F(x, y)) < threshold) {
+      CP.push(new THREE.Vector3(x, y, 0));
+    }
+  }
+}
+
+const curveGeometry = new THREE.BufferGeometry().setFromPoints(CP);
+const curveMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 0.6 });
+const curve = new THREE.Points(curveGeometry, curveMaterial);
+scene.add(curve);
+
+const gradientGroup = new THREE.Group();
+
+for (let i = 0; i < CP.length; i += 20) {
+  const p = CP[i];
+
+  const grad = gradientF(p.x, p.y);
+
+  if (grad.length() > 0.001) {
+    const arrow = new THREE.ArrowHelper(
+      grad.clone().normalize(),
+      p,
+      4,              
+      0x00ff00
+    );
+
+    gradientGroup.add(arrow);
+  }
+}
+
+scene.add(gradientGroup);
+
+// Render Loop
+function animate() {
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene, camera);
+}
+animate();
